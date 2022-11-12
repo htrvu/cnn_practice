@@ -36,6 +36,14 @@ def _depthwise_separable_block(input, strides, pw_filters, alpha, block_id):
 
     return x
 
+def preprocess_input(inputs):
+    '''
+        Preprocess input for MobileNetV1
+        Scale pixel values to [-1, 1]
+    '''
+    inputs /= 255.
+    inputs = 2.0 * inputs - 1.0
+    return inputs
 
 class MobileNet():
     def __init__(self, input_shape=None, n_classes=None, alpha=1.0, dropout=None):
