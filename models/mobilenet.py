@@ -66,19 +66,19 @@ class MobileNet():
         if input_shape is None:
             raise ValueError('Input shape must be specified')
 
-        self.input_shape = input_shape
-        self.n_classes = n_classes
-        self.alpha = alpha
-        self.batch_norm = batch_norm
-        self.dropout = dropout
+        self.__input_shape = input_shape
+        self.__n_classes = n_classes
+        self.__alpha = alpha
+        self.__batch_norm = batch_norm
+        self.__dropout = dropout
 
-        self.model = self.__build_model()
+        self.__model = self.__build_model()
 
     def get_model(self):
-        return self.model
+        return self.__model
 
     def __build_model(self):
-        input = tf.keras.Input(shape=self.input_shape)
+        input = tf.keras.Input(shape=self.__input_shape)
 
         depthwise_separable_stack = [
             {'strides': 1, 'pw_filters': 64, 'block_id': 1},
@@ -95,22 +95,22 @@ class MobileNet():
         ]
 
         # First conv layer
-        x = _conv2d_block(input, filters=32, kernel_size=3, strides=2, alpha=self.alpha, batch_norm=self.batch_norm, block_id=1)
+        x = _conv2d_block(input, filters=32, kernel_size=3, strides=2, alpha=self.__alpha, batch_norm=self.__batch_norm, block_id=1)
 
         # Depthwise separable blocks
         for block in depthwise_separable_stack:
             if isinstance(block, dict):
-                x = _depthwise_separable_block(x, alpha=self.alpha, batch_norm=self.batch_norm, **block)
+                x = _depthwise_separable_block(x, alpha=self.__alpha, batch_norm=self.__batch_norm, **block)
             else:
                 for b in block:
-                    x = _depthwise_separable_block(x, alpha=self.alpha, batch_norm=self.batch_norm, **b)
+                    x = _depthwise_separable_block(x, alpha=self.__alpha, batch_norm=self.__batch_norm, **b)
 
         # Average pooling & dropout
         x = GlobalAveragePooling2D(name="avg_pool")(x)
-        if self.dropout is not None:
-            x = tf.keras.layers.Dropout(self.dropout, name="dropout")(x)
+        if self.__dropout is not None:
+            x = tf.keras.layers.Dropout(self.__dropout, name="dropout")(x)
 
         # Output layer
-        x = Dense(units=self.n_classes, activation='softmax', name="output")(x)
+        x = Dense(units=self.__n_classes, activation='softmax', name="output")(x)
 
         return tf.keras.Model(inputs=input, outputs=x)
