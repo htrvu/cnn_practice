@@ -1,5 +1,5 @@
 import tensorflow as tf
-from tensorflow.keras.layers import Conv2D, DepthwiseConv2D, BatchNormalization, GlobalAveragePooling2D, Dense
+from tensorflow.keras.layers import Conv2D, DepthwiseConv2D, BatchNormalization, GlobalAveragePooling2D, Dense, ReLU, ZeroPadding2D
 
 def _conv2d_block(input, filters, kernel_size, strides, alpha, block_id):
     x = Conv2D(filters=int(filters * alpha),
@@ -9,20 +9,26 @@ def _conv2d_block(input, filters, kernel_size, strides, alpha, block_id):
                use_bias=False,
                name=f'conv_{block_id}')(input)
     x = BatchNormalization(name=f'bn_{block_id}')(x)
-    x = tf.keras.layers.ReLU(max_value=6.0, name=f'relu6_{block_id}')(x)
+    x = ReLU(max_value=6.0, name=f'relu6_{block_id}')(x)
     return x
 
 
 def _depthwise_separable_block(input, strides, pw_filters, alpha, block_id):
+    x = input
+
+    # just a little demo (ref from tensorflow implementation)
+    if strides != 1:
+        x = ZeroPadding2D(((0, 1), (0, 1)), name="depthwise_pad_%d" % block_id)(input)
+
     # Depthwise
     x = DepthwiseConv2D(kernel_size=3,
                         strides=strides,
-                        padding='same',
+                        padding="same" if strides == 1 else "valid",
                         use_bias=False,
-                        name=f'depthwise_cond_{block_id}')(input)
+                        name=f'depthwise_cond_{block_id}')(x)
 
     x = BatchNormalization(name=f'depthwise_bn_{block_id}')(x)
-    x = tf.keras.layers.ReLU(max_value=6.0, name=f'depthwise_relu6_{block_id}')(x)
+    x = ReLU(max_value=6.0, name=f'depthwise_relu6_{block_id}')(x)
 
     # Pointwise
     x = Conv2D(filters=int(pw_filters * alpha),
@@ -32,7 +38,7 @@ def _depthwise_separable_block(input, strides, pw_filters, alpha, block_id):
                use_bias=False,
                name=f'pointwise_conv_{block_id}')(x)
     x = BatchNormalization(name=f'pointwise_bn_{block_id}')(x)
-    x = tf.keras.layers.ReLU(max_value=6.0, name=f'pointwise_relu6_{block_id}')(x)
+    x = ReLU(max_value=6.0, name=f'pointwise_relu6_{block_id}')(x)
 
     return x
 
