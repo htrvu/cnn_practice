@@ -1,19 +1,20 @@
 import tensorflow as tf
 from tensorflow.keras.layers import Conv2D, DepthwiseConv2D, BatchNormalization, GlobalAveragePooling2D, Dense, ReLU, ZeroPadding2D
 
-def _conv2d_block(input, filters, kernel_size, strides, alpha, block_id):
+def _conv2d_block(input, filters, kernel_size, strides, alpha, batch_norm, block_id):
     x = Conv2D(filters=int(filters * alpha),
                kernel_size=kernel_size,
                strides=strides,
                padding='same',
                use_bias=False,
                name=f'conv_{block_id}')(input)
-    x = BatchNormalization(name=f'bn_{block_id}')(x)
+    if batch_norm:
+        x = BatchNormalization(name=f'bn_{block_id}')(x)
     x = ReLU(max_value=6.0, name=f'relu6_{block_id}')(x)
     return x
 
 
-def _depthwise_separable_block(input, strides, pw_filters, alpha, block_id):
+def _depthwise_separable_block(input, strides, pw_filters, alpha, batch_norm, block_id):
     x = input
 
     # just a little demo (ref from tensorflow implementation)
@@ -26,8 +27,8 @@ def _depthwise_separable_block(input, strides, pw_filters, alpha, block_id):
                         padding="same" if strides == 1 else "valid",
                         use_bias=False,
                         name=f'depthwise_cond_{block_id}')(x)
-
-    x = BatchNormalization(name=f'depthwise_bn_{block_id}')(x)
+    if batch_norm:
+        x = BatchNormalization(name=f'depthwise_bn_{block_id}')(x)
     x = ReLU(max_value=6.0, name=f'depthwise_relu6_{block_id}')(x)
 
     # Pointwise
@@ -37,7 +38,8 @@ def _depthwise_separable_block(input, strides, pw_filters, alpha, block_id):
                padding='same',
                use_bias=False,
                name=f'pointwise_conv_{block_id}')(x)
-    x = BatchNormalization(name=f'pointwise_bn_{block_id}')(x)
+    if batch_norm:
+        x = BatchNormalization(name=f'pointwise_bn_{block_id}')(x)
     x = ReLU(max_value=6.0, name=f'pointwise_relu6_{block_id}')(x)
 
     return x
@@ -51,8 +53,9 @@ def preprocess_input(inputs):
     inputs = 2.0 * inputs - 1.0
     return inputs
 
+
 class MobileNet():
-    def __init__(self, input_shape=None, n_classes=None, alpha=1.0, dropout=None):
+    def __init__(self, input_shape=None, n_classes=None, alpha=1.0, batch_norm=True, dropout=None):
         '''
             Args:
                 input_shape: (H, W, C). Default to None
@@ -66,6 +69,7 @@ class MobileNet():
         self.input_shape = input_shape
         self.n_classes = n_classes
         self.alpha = alpha
+        self.batch_norm = batch_norm
         self.dropout = dropout
 
         self.model = self.__build_model()
@@ -91,15 +95,15 @@ class MobileNet():
         ]
 
         # First conv layer
-        x = _conv2d_block(input, filters=32, kernel_size=3, strides=2, alpha=self.alpha, block_id=1)
+        x = _conv2d_block(input, filters=32, kernel_size=3, strides=2, alpha=self.alpha, batch_norm=self.batch_norm, block_id=1)
 
         # Depthwise separable blocks
         for block in depthwise_separable_stack:
             if isinstance(block, dict):
-                x = _depthwise_separable_block(x, alpha=self.alpha, **block)
+                x = _depthwise_separable_block(x, alpha=self.alpha, batch_norm=self.batch_norm, **block)
             else:
                 for b in block:
-                    x = _depthwise_separable_block(x, alpha=self.alpha, **b)
+                    x = _depthwise_separable_block(x, alpha=self.alpha, batch_norm=self.batch_norm, **b)
 
         # Average pooling & dropout
         x = GlobalAveragePooling2D(keepdims=True, name="avg_pool")(x)
