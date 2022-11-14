@@ -3,7 +3,7 @@ from tensorflow.keras.layers import Conv2D, DepthwiseConv2D, BatchNormalization,
 from models.mobilenet import _conv2d_block, _depthwise_separable_block
 
 
-def _inverted_residual_block(input, expansion_factor, strides, pw_filters, alpha, block_id):
+def _inverted_residual_block(input, expansion_factor, strides, pw_filters, alpha, batch_norm, block_id):
     input_channels = int(input.shape[-1])
     x = input
 
@@ -15,7 +15,8 @@ def _inverted_residual_block(input, expansion_factor, strides, pw_filters, alpha
                 padding='same',
                 use_bias=False,
                 name=f'expansion_conv_{block_id}')(x)
-        x = BatchNormalization(name=f'expansion_bn_{block_id}')(x)
+        if batch_norm:
+            x = BatchNormalization(name=f'expansion_bn_{block_id}')(x)
         x = tf.keras.layers.ReLU(max_value=6.0, name=f'expansion_relu6_{block_id}')(x)
 
     # Depthwise & Pointwise (projection)
@@ -29,7 +30,7 @@ def _inverted_residual_block(input, expansion_factor, strides, pw_filters, alpha
 
 
 class MobileNetV2():
-    def __init__(self, input_shape=None, n_classes=None, alpha=1.0, dropout=None):
+    def __init__(self, input_shape=None, n_classes=None, alpha=1.0, batch_norm=True, dropout=None):
         '''
             Args:
                 input_shape: (H, W, C). Default to None
@@ -44,6 +45,7 @@ class MobileNetV2():
         self.n_classes = n_classes
         self.alpha = alpha
         self.dropout = dropout
+        self.batch_norm = batch_norm
 
         self.model = self.__build_model()
 
@@ -65,7 +67,7 @@ class MobileNetV2():
         ]
 
         # First Conv2D layer
-        x = _conv2d_block(input, filters=32, kernel_size=3, strides=2, alpha=self.alpha, block_id=1)
+        x = _conv2d_block(input, filters=32, kernel_size=3, strides=2, alpha=self.alpha, batch_norm=self.batch_norm, block_id=1)
 
         # Inverted residual blocks
         block_id = 1
@@ -73,17 +75,18 @@ class MobileNetV2():
             for i in range(n):
                 if i != 0:
                     strides = 1
-                x = _inverted_residual_block(x, expansion_factor, strides, pw_filters, self.alpha, block_id)
+                x = _inverted_residual_block(x, expansion_factor, strides, pw_filters, self.alpha, self.batch_norm, block_id)
                 block_id += 1
 
         # Last Conv2D layer
         x = Conv2D(filters=int(1280 * self.alpha),
-                        kernel_size=1,
-                        strides=1,
-                        padding='same',
-                        use_bias=False,
-                        name='conv_last')(x)
-        x = BatchNormalization(name='bn_last')(x)
+                    kernel_size=1,
+                    strides=1,
+                    padding='same',
+                    use_bias=False,
+                    name='conv_last')(x)
+        if self.batch_norm:
+            x = BatchNormalization(name='bn_last')(x)
         x = tf.keras.layers.ReLU(max_value=6.0, name='relu6_last')(x)
 
         # Global Average Pooling
