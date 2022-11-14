@@ -33,8 +33,8 @@ def preprocess_input(inputs):
         Preprocess input for MobileNetV2
         Scale pixel values to [-1, 1]
     '''
-    inputs /= 127.7
-    inputs = 5.0
+    inputs /= 127.5
+    inputs -= 1.0
     return inputs
 
 
