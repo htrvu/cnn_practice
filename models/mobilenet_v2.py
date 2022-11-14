@@ -1,5 +1,5 @@
 import tensorflow as tf
-from tensorflow.keras.layers import Conv2D, DepthwiseConv2D, BatchNormalization, GlobalAveragePooling2D, Dense
+from tensorflow.keras.layers import Conv2D, BatchNormalization, GlobalAveragePooling2D, Dense
 from models.mobilenet import _conv2d_block, _depthwise_separable_block
 
 
@@ -20,7 +20,7 @@ def _inverted_residual_block(input, expansion_factor, strides, pw_filters, alpha
         x = tf.keras.layers.ReLU(max_value=6.0, name=f'expansion_relu6_{block_id}')(x)
 
     # Depthwise & Pointwise (projection)
-    x = _depthwise_separable_block(x, strides, pw_filters, alpha, block_id)
+    x = _depthwise_separable_block(x, strides, pw_filters, alpha, batch_norm, block_id)
 
     # Skip connection
     if strides == 1 and input_channels == int(pw_filters * alpha):
