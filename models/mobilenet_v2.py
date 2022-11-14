@@ -28,6 +28,15 @@ def _inverted_residual_block(input, expansion_factor, strides, pw_filters, alpha
 
     return x
 
+def preprocess_input(inputs):
+    '''
+        Preprocess input for MobileNetV2
+        Scale pixel values to [-1, 1]
+    '''
+    inputs /= 127.7
+    inputs = 5.0
+    return inputs
+
 
 class MobileNetV2():
     def __init__(self, input_shape=None, n_classes=None, alpha=1.0, batch_norm=True, dropout=None):
@@ -41,19 +50,19 @@ class MobileNetV2():
         if input_shape is None:
             raise ValueError('Input shape must be specified')
 
-        self.input_shape = input_shape
-        self.n_classes = n_classes
-        self.alpha = alpha
-        self.dropout = dropout
-        self.batch_norm = batch_norm
+        self.__input_shape = input_shape
+        self.__n_classes = n_classes
+        self.__alpha = alpha
+        self.__dropout = dropout
+        self.__batch_norm = batch_norm
 
-        self.model = self.__build_model()
+        self.__model = self.__build_model()
 
     def get_model(self):
-        return self.model
+        return self.__model
 
     def __build_model(self):
-        input = tf.keras.Input(shape=self.input_shape)
+        input = tf.keras.Input(shape=self.__input_shape)
 
         inverted_residual_stack = [
             # expansion_factor , pw_filters, n, strides
@@ -67,7 +76,7 @@ class MobileNetV2():
         ]
 
         # First Conv2D layer
-        x = _conv2d_block(input, filters=32, kernel_size=3, strides=2, alpha=self.alpha, batch_norm=self.batch_norm, block_id=1)
+        x = _conv2d_block(input, filters=32, kernel_size=3, strides=2, alpha=self.__alpha, batch_norm=self.__batch_norm, block_id=1)
 
         # Inverted residual blocks
         block_id = 1
@@ -75,27 +84,27 @@ class MobileNetV2():
             for i in range(n):
                 if i != 0:
                     strides = 1
-                x = _inverted_residual_block(x, expansion_factor, strides, pw_filters, self.alpha, self.batch_norm, block_id)
+                x = _inverted_residual_block(x, expansion_factor, strides, pw_filters, self.__alpha, self.__batch_norm, block_id)
                 block_id += 1
 
         # Last Conv2D layer
-        x = Conv2D(filters=int(1280 * self.alpha),
+        x = Conv2D(filters=int(1280 * self.__alpha),
                     kernel_size=1,
                     strides=1,
                     padding='same',
                     use_bias=False,
                     name='conv_last')(x)
-        if self.batch_norm:
+        if self.__batch_norm:
             x = BatchNormalization(name='bn_last')(x)
         x = tf.keras.layers.ReLU(max_value=6.0, name='relu6_last')(x)
 
         # Global Average Pooling
         x = GlobalAveragePooling2D(name='avg_pool')(x)
-        if self.dropout is not None:
-            x = tf.keras.layers.Dropout(rate=self.dropout, name="dropout")(x)
+        if self.__dropout is not None:
+            x = tf.keras.layers.Dropout(rate=self.__dropout, name="dropout")(x)
 
         # Output layer
-        x = Dense(units=self.n_classes, activation='softmax', name='output')(x)
+        x = Dense(units=self.__n_classes, activation='softmax', name='output')(x)
 
         return tf.keras.Model(inputs=input, outputs=x)
 
