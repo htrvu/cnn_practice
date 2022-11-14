@@ -106,7 +106,7 @@ class MobileNet():
                     x = _depthwise_separable_block(x, alpha=self.alpha, batch_norm=self.batch_norm, **b)
 
         # Average pooling & dropout
-        x = GlobalAveragePooling2D(keepdims=True, name="avg_pool")(x)
+        x = GlobalAveragePooling2D(name="avg_pool")(x)
         if self.dropout is not None:
             x = tf.keras.layers.Dropout(self.dropout, name="dropout")(x)
 
