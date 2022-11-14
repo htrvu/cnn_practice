@@ -20,9 +20,8 @@ def preprocess_input(inputs):
         - Zero-center each color channel with respect to the ImageNet dataset, without scaling.
     '''
     inputs = inputs[..., ::-1]
-    inputs[..., 0] -= 103.939
-    inputs[..., 1] -= 116.779
-    inputs[..., 2] -= 123.68
+    mean = tf.constant([103.939, 116.779, 123.68], dtype=inputs.dtype, shape=[1, 1, 1, 3])
+    inputs = inputs - mean
     return inputs
 
 
