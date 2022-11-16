@@ -1,6 +1,13 @@
 import tensorflow as tf
 from tensorflow.keras.layers import Conv2D, Dropout, Dense, ReLU, MaxPooling2D, Flatten
 
+def preprocess_input(inputs):
+    '''
+        Preprocess input for AlexNet:
+        - Divide the images by 255.0
+    '''
+    return inputs / 255.0
+
 class AlexNet():
     def __init__(self, input_shape=None, n_classes=None, dropout=None):
         '''

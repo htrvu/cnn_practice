@@ -16,6 +16,18 @@ CONFIGS = {
     'vgg19': [[64, 64], [128, 128], [256, 256, 256, 256], [512, 512, 512, 512], [512, 512, 512, 512]],
 }
 
+def preprocess_input(inputs):
+    '''
+        Preprocess input for VGG:
+
+        - Convert the images from RGB to BGR
+        - Zero-center each color channel with respect to the ImageNet dataset, without scaling.
+    '''
+    inputs = inputs[..., ::-1]
+    mean = tf.constant([103.939, 116.779, 123.68], dtype=inputs.dtype, shape=[1, 1, 1, 3])
+    inputs = inputs - mean
+    return inputs
+
 
 class VGG():
     def __init__(self, model_name, input_shape=None, n_classes=None, dropout=None):
@@ -51,7 +63,7 @@ class VGG():
         x = Flatten()(x)
         if self.__dropout is not None:
             x = Dropout(self.__dropout)(x)
-            
+
         x = Dense(4096, activation='relu')(x)
         x = Dense(4096, activation='relu')(x)
         x = Dense(self.__n_classes, activation='softmax')(x)
