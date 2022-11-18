@@ -6,8 +6,8 @@ Implementation of some popular CNN models using Tensorflow framework. Currently,
 - MobileNet [(paper)]() , MobileNetV2 [(paper)](https://arxiv.org/abs/1801.04381)
 - ResNet (from ResNet18 to ResNet152) [(paper)](https://arxiv.org/abs/1512.03385)
 
-Training demo: [Kaggle notebook](https://www.kaggle.com/trngvhong/cnn-practice-demos) (check the version to find the script of models)
+Training demo: [Kaggle notebook](https://www.kaggle.com/trngvhong/popular-cnn-architectures-tf-demos) (check the version to find the script of models)
 
 In the future:
-- Inception V1 [(paper)](https://arxiv.org/abs/1409.4842)
 - DenseNet [(paper)](https://arxiv.org/abs/1608.06993)
+- Inception V1 [(paper)](https://arxiv.org/abs/1409.4842)
