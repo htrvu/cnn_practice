@@ -79,11 +79,9 @@ class DenseNet():
     def __init__(self, model_name, input_shape=None, n_classes=None, dropout=None):
         '''
             Args:
-                model_name: str, name of the model (vgg11, vgg13, vgg16, vgg19)
+                model_name: str, name of the model (densenet121, densenet169, densenet201, densenet264)
                 input_shape: input shape of the image
                 n_classes: number of classes
-                theta: width multiplier
-                batch_norm: whether to use batch normalization
                 dropout: dropout rate
         '''
         if model_name not in CONFIGS:

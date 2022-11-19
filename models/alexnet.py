@@ -14,8 +14,6 @@ class AlexNet():
             Args:
                 input_shape: input shape of the image
                 n_classes: number of classes
-                alpha: width multiplier
-                batch_norm: whether to use batch normalization
                 dropout: dropout rate
         '''
         self.__input_shape = input_shape

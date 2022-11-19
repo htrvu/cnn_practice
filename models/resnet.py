@@ -109,8 +109,6 @@ class ResNet():
                 model_name: str, name of the model (resnet18, resnet34, resnet50, resnet101, resnet152)
                 input_shape: input shape of the image
                 n_classes: number of classes
-                alpha: width multiplier
-                batch_norm: whether to use batch normalization
                 dropout: dropout rate
         '''
         if model_name not in CONFIGS:

@@ -36,8 +36,6 @@ class VGG():
                 model_name: str, name of the model (vgg11, vgg13, vgg16, vgg19)
                 input_shape: input shape of the image
                 n_classes: number of classes
-                alpha: width multiplier
-                batch_norm: whether to use batch normalization
                 dropout: dropout rate
         '''
         if model_name not in CONFIGS:
