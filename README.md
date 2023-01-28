@@ -8,6 +8,6 @@ Implementation of some popular CNN models using Tensorflow and Pytorch framework
 - DenseNet [(paper)](https://arxiv.org/abs/1608.06993)
 - MobileNet [(paper)]() , MobileNetV2 [(paper)](https://arxiv.org/abs/1801.04381)
 
-Training demo:
-- [Tensorflow](https://www.kaggle.com/trngvhong/popular-cnn-architectures-tf-demos) (check the version to find the script of models)
-- [Pytorch](https://www.kaggle.com) (check the version to find the script of models)
+Training demo: (check the version to find the script of models)
+- [Tensorflow](https://www.kaggle.com/trngvhong/popular-cnn-architectures-tf-demos)
+- [Pytorch](https://www.kaggle.com) 
