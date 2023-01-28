@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow.keras.layers import Conv2D, Dropout, Dense, ReLU, MaxPooling2D, Flatten
 
-def VGGBlock(input, n_filters):
+def vgg_block(input, n_filters):
     x = input
     for filters in n_filters:
         x = Conv2D(filters,kernel_size=3, strides=1, padding='same')(x)
@@ -56,7 +56,7 @@ class VGG():
         x = input
 
         for n_filters in self.__config:
-            x = VGGBlock(x, n_filters)
+            x = vgg_block(x, n_filters)
 
         x = Flatten()(x)
         if self.__dropout is not None:
