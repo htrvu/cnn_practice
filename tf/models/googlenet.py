@@ -9,9 +9,6 @@ def _conv_block(inputs, n_filters, kernel_size, strides, padding, prefix=''):
 
 def _inception_block(inputs, n_filters, prefix=''):
     # Conv 1x1
-    # x1 = Conv2D(filters=n_filters[0], kernel_size=1, strides=1, padding='same', name=f'{prefix}_conv_1x1')(inputs)
-    # x1 = BatchNormalization(name=f'{prefix}_conv_1x1_bn')(x1)
-    # x1 = ReLU(name=f'{prefix}_conv_1x1_relu')(x1)
     x1 = _conv_block(inputs, n_filters[0], 1, 1, 'same', prefix=f'{prefix}_conv_1x1')
 
     # Conv 3x3

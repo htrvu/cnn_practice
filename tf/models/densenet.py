@@ -15,12 +15,12 @@ def _bottleneck_layers(inputs, growth_rate, prefix='', block_id=''):
     return x
 
 
-def _dense_block(inputs, n_bb_layers, growth_rate, prefix='', block_id=''):
+def _dense_block(inputs, n_bn_layers, growth_rate, prefix='', block_id=''):
     '''
         Dense block for DenseNet
     '''
     x = inputs
-    for i in range(n_bb_layers):
+    for i in range(n_bn_layers):
         bb_output = _bottleneck_layers(x, growth_rate, prefix=prefix, block_id=f'{block_id}_{i}')
         x = Concatenate(axis=-1, name=f'{prefix}_concat_{i+1}')([bb_output, x])
     return x
@@ -53,29 +53,29 @@ def preprocess_input(inputs):
 
 CONFIGS = {
     'densenet121': {
-        'n_bb_layers': [6, 12, 24, 16],
+        'n_bn_layers': [6, 12, 24, 16],
         'growth_rate': 32,
         'theta': 0.5
     },
     'densenet169': {
-        'n_bb_layers': [6, 12, 32, 32],
+        'n_bn_layers': [6, 12, 32, 32],
         'growth_rate': 32,
         'theta': 0.5
     },
     'densenet201': {
-        'n_bb_layers': [6, 12, 48, 32],
+        'n_bn_layers': [6, 12, 48, 32],
         'growth_rate': 32,
         'theta': 0.5
     },
     'densenet264': {
-        'n_bb_layers': [6, 12, 64, 48],
+        'n_bn_layers': [6, 12, 64, 48],
         'growth_rate': 32,
         'theta': 0.5
     }
 }
 
 
-class DenseNet():
+class _DenseNet():
     def __init__(self, model_name, input_shape=None, n_classes=None, dropout=None):
         '''
             Args:
@@ -101,16 +101,16 @@ class DenseNet():
         input = tf.keras.Input(shape=self.__input_shape)
         x = input
 
-        n_bb_layers, growth_rate, theta = self.__config['n_bb_layers'], self.__config['growth_rate'], self.__config['theta']
+        n_bn_layers, growth_rate, theta = self.__config['n_bn_layers'], self.__config['growth_rate'], self.__config['theta']
 
         x = Conv2D(filters=2*growth_rate, kernel_size=7, strides=2, padding='same', name='conv_1', use_bias=False)(x)
         x = BatchNormalization(name='bn_1')(x)
         x = ReLU(name='relu_1')(x)
         x = AveragePooling2D(pool_size=3, strides=2, padding='same')(x)
 
-        for i, n_bb_layer in enumerate(n_bb_layers):
+        for i, n_bb_layer in enumerate(n_bn_layers):
             x = _dense_block(x, n_bb_layer, growth_rate, prefix=f'dense_block_{i + 1}', block_id=i)
-            if i != len(n_bb_layers) - 1:
+            if i != len(n_bn_layers) - 1:
                 x = _transition_layers(x, theta, prefix=f'transition_layer_{i + 1}', block_id=i)
 
         x = BatchNormalization(name='bn_last')(x)
@@ -126,13 +126,13 @@ class DenseNet():
 
 
 def DenseNet121(input_shape=(224, 224, 3), n_classes=1000, dropout=None):
-    return DenseNet('densenet121', input_shape=input_shape, n_classes=n_classes, dropout=dropout)
+    return _DenseNet('densenet121', input_shape=input_shape, n_classes=n_classes, dropout=dropout)
 
 def DenseNet169(input_shape=(224, 224, 3), n_classes=1000, dropout=None):
-    return DenseNet('densenet169', input_shape=input_shape, n_classes=n_classes, dropout=dropout)
+    return _DenseNet('densenet169', input_shape=input_shape, n_classes=n_classes, dropout=dropout)
 
 def DenseNet201(input_shape=(224, 224, 3), n_classes=1000, dropout=None):
-    return DenseNet('densenet201', input_shape=input_shape, n_classes=n_classes, dropout=dropout)
+    return _DenseNet('densenet201', input_shape=input_shape, n_classes=n_classes, dropout=dropout)
 
 def DenseNet264(input_shape=(224, 224, 3), n_classes=1000, dropout=None):
-    return DenseNet('densenet264', input_shape=input_shape, n_classes=n_classes, dropout=dropout)
+    return _DenseNet('densenet264', input_shape=input_shape, n_classes=n_classes, dropout=dropout)

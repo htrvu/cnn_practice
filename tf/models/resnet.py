@@ -25,7 +25,7 @@ def preprocess_input(inputs):
     return inputs
 
 
-def res_block(input, filters, strides, block_id):
+def _basic_block(input, filters, strides, block_id):
     prefix = f'res_block_{block_id}'
     x = _conv2d_block(input, filters, 3, strides, prefix=prefix, block_id=1)
     x = _conv2d_block(x, filters, 3, 1, prefix=prefix, block_id=2)
@@ -39,14 +39,14 @@ def res_block(input, filters, strides, block_id):
     x = ReLU(max_value=6.0, name=f'{prefix}_relu6_add')(x)
     return x
 
-def res_stack(input, filters, n_blocks, first_strides, stack_id):
-    x = res_block(input, filters=filters, strides=first_strides, block_id=f'{stack_id}_{1}')
+def _basic_stack(input, filters, n_blocks, first_strides, stack_id):
+    x = _basic_block(input, filters=filters, strides=first_strides, block_id=f'{stack_id}_{1}')
     for i in range(2, n_blocks + 1):
-        x = res_block(x, filters=filters, strides=1, block_id=f'{stack_id}_{i}')
+        x = _basic_block(x, filters=filters, strides=1, block_id=f'{stack_id}_{i}')
     return x
 
 
-def bottleneck_block(input, filters, strides, block_id):
+def _bottleneck_block(input, filters, strides, block_id):
     prefix = f'bottleneck_block_{block_id}'
     x = _conv2d_block(input, filters, 1, strides, prefix=prefix, block_id=1)
     x = _conv2d_block(x, filters, 3, 1, prefix=prefix, block_id=2)
@@ -61,10 +61,10 @@ def bottleneck_block(input, filters, strides, block_id):
     x = ReLU(max_value=6.0, name=f'{prefix}_relu6_add')(x)
     return x
 
-def bottleneck_stack(input, filters, n_blocks, first_strides, stack_id):
-    x = bottleneck_block(input, filters=filters, strides=first_strides, block_id=f'{stack_id}_{1}')
+def _bottleneck_stack(input, filters, n_blocks, first_strides, stack_id):
+    x = _bottleneck_block(input, filters=filters, strides=first_strides, block_id=f'{stack_id}_{1}')
     for i in range(2, n_blocks + 1):
-        x = bottleneck_block(x, filters=filters, strides=1, block_id=f'{stack_id}_{i}')
+        x = _bottleneck_block(x, filters=filters, strides=1, block_id=f'{stack_id}_{i}')
     return x
 
 
@@ -73,36 +73,36 @@ CONFIGS = {
         'n_blocks': [2, 2, 2, 2],
         'filters': [64, 128, 256, 512],
         'first_strides': [1, 2, 2, 2],
-        'create_func': res_stack
+        'create_func': _basic_stack
     },
     'resnet34': {
         'n_blocks': [3, 4, 6, 3],
         'filters': [64, 128, 256, 512],
         'first_strides': [1, 2, 2, 2],
-        'create_func': res_stack
+        'create_func': _basic_stack
     },
     'resnet50': {
         'n_blocks': [3, 4, 6, 3],
         'filters': [64, 128, 256, 512],
         'first_strides': [1, 2, 2, 2],
-        'create_func': bottleneck_stack
+        'create_func': _bottleneck_stack
     },
     'resnet101': {
         'n_blocks': [3, 4, 23, 3],
         'filters': [64, 128, 256, 512],
         'first_strides': [1, 2, 2, 2],
-        'create_func': bottleneck_stack
+        'create_func': _bottleneck_stack
     },
     'resnet152': {
         'n_blocks': [3, 8, 36, 3],
         'filters': [64, 128, 256, 512],
         'first_strides': [1, 2, 2, 2],
-        'create_func': bottleneck_stack
+        'create_func': _bottleneck_stack
     }
 }
 
 
-class ResNet():
+class _ResNet():
     def __init__(self, model_name, input_shape=None, n_classes=None, dropout=None):
         '''
             Args:
@@ -142,19 +142,19 @@ class ResNet():
         
 
 def ResNet18(input_shape=(224, 224, 3), n_classes=1000, dropout=None):
-    return ResNet('resnet18', input_shape=input_shape, n_classes=n_classes, dropout=dropout)
+    return _ResNet('resnet18', input_shape=input_shape, n_classes=n_classes, dropout=dropout)
 
 def ResNet34(input_shape=(224, 224, 3), n_classes=1000, dropout=None):
-    return ResNet('resnet34', input_shape=input_shape, n_classes=n_classes, dropout=dropout)
+    return _ResNet('resnet34', input_shape=input_shape, n_classes=n_classes, dropout=dropout)
 
 def ResNet50(input_shape=(224, 224, 3), n_classes=1000, dropout=None):
-    return ResNet('resnet50', input_shape=input_shape, n_classes=n_classes, dropout=dropout)
+    return _ResNet('resnet50', input_shape=input_shape, n_classes=n_classes, dropout=dropout)
 
 def ResNet101(input_shape=(224, 224, 3), n_classes=1000, dropout=None):
-    return ResNet('resnet101', input_shape=input_shape, n_classes=n_classes, dropout=dropout)
+    return _ResNet('resnet101', input_shape=input_shape, n_classes=n_classes, dropout=dropout)
 
 def ResNet152(input_shape=(224, 224, 3), n_classes=1000, dropout=None):
-    return ResNet('resnet152', input_shape=input_shape, n_classes=n_classes, dropout=dropout)
+    return _ResNet('resnet152', input_shape=input_shape, n_classes=n_classes, dropout=dropout)
 
 
 
