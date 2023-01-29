@@ -27,7 +27,7 @@ class _VGG(BaseModel):
         
         self.features = self.__build_features(model_name)
         self.avgpool = nn.AdaptiveAvgPool2d((7, 7))
-        self.classifier = self.__build__classifier(dropout, n_classes)
+        self.classifier = self.__build_classifier(dropout, n_classes)
 
         self.init_weights()
 
@@ -40,7 +40,7 @@ class _VGG(BaseModel):
             in_channels = n_filters[-1]
         return nn.Sequential(*layers)
 
-    def __build__classifier(self, dropout, n_classes):
+    def __build_classifier(self, dropout, n_classes):
         layers = []
         layers.extend([nn.Linear(512 * 7 * 7, 4096), nn.ReLU(inplace=True)])
         if dropout is not None:
