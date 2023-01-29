@@ -1,4 +1,4 @@
-# CNN Practice with Tensorflow
+# CNN Practice with Tensorflow and Pytorch
 
 Implementation of some popular CNN models using Tensorflow and Pytorch framework. Currently, I have implemented these following models:
 - AlexNet [(paper)](https://proceedings.neurips.cc/paper/2012/file/c399862d3b9d6b76c8436e924a68c45b-Paper.pdf)
