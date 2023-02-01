@@ -1,6 +1,6 @@
 import torch
 from torch import nn
-from base import BaseModel
+from pytorch.models.base import BaseModel
 from torchsummary import summary
 
 

@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 from torchsummary import summary
-from base import BaseModel
+from pytorch.models.base import BaseModel
 
 class AlexNet(BaseModel):
     def __init__(self, n_classes = 1000, dropout = 0.5):

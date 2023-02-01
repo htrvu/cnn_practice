@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 from torchsummary import summary
-from base import BaseModel
+from pytorch.models.base import BaseModel
 
 class _VGGBlock(nn.Module):
     def __init__(self, in_channels, n_filters):

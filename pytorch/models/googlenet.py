@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 from torchsummary import summary
-from base import BaseModel
+from pytorch.models.base import BaseModel
 
 class _ConvBlock(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0):
