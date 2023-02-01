@@ -3,14 +3,14 @@ from torch import nn
 from base import BaseModel
 from torchsummary import summary
 
-
 class _ConvBlock(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0):
+    def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, groups=1):
         super(_ConvBlock, self).__init__()
-        self.conv = nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding, bias=False)
+        self.conv = nn.Conv2d(in_channels, out_channels, kernel_size,
+                              stride, padding, groups=groups, bias=False)
         self.bn = nn.BatchNorm2d(out_channels)
         self.relu = nn.ReLU(inplace=True)
-    
+
     def forward(self, x):
         x = self.relu(self.bn(self.conv(x)))
         return x
@@ -21,22 +21,18 @@ class _DepthwiseSeparableBlock(nn.Module):
         super(_DepthwiseSeparableBlock, self).__init__()
 
         # depthwise
-        self.conv1 = nn.Conv2d(in_channels, in_channels, kernel_size=3,
-                               stride=dw_stride, padding=1, groups=in_channels, bias=False)
-        self.bn1 = nn.BatchNorm2d(in_channels)
-        self.relu1 = nn.ReLU(inplace=True)
+        self.dw = _ConvBlock(in_channels, in_channels, kernel_size=3,
+                                stride=dw_stride, padding=1, groups=in_channels)
 
         # pointwise
         out_channels = int(out_channels * alpha)
-        self.conv2 = nn.Conv2d(in_channels, out_channels, kernel_size=1,
-                               stride=1, padding=0, bias=False)
-        self.bn2 = nn.BatchNorm2d(out_channels)
-        self.relu2 = nn.ReLU(inplace=True)
+        self.pw = _ConvBlock(in_channels, out_channels, kernel_size=1, stride=1, padding=0)
 
     def forward(self, x):
-        x = self.relu1(self.bn1(self.conv1(x)))
-        x = self.relu2(self.bn2(self.conv2(x)))
+        x = self.dw(x)
+        x = self.pw(x)
         return x
+
 
 class MobileNet(BaseModel):
     def __init__(self, n_classes=1000, alpha=1.0, dropout=None):
@@ -53,7 +49,8 @@ class MobileNet(BaseModel):
 
         # head
         self.in_channels = int(alpha * 32)
-        layers.append(_ConvBlock(3, self.in_channels, kernel_size=3, stride=2, padding=1))
+        layers.append(_ConvBlock(3, self.in_channels,
+                      kernel_size=3, stride=2, padding=1))
 
         # depthwise separable blocks
         cfg = [
@@ -73,7 +70,8 @@ class MobileNet(BaseModel):
             [1, 1024],
         ]
         for dw_stride, out_channels in cfg:
-            layers.append(_DepthwiseSeparableBlock(self.in_channels, out_channels, dw_stride, alpha))
+            layers.append(_DepthwiseSeparableBlock(
+                self.in_channels, out_channels, dw_stride, alpha))
             self.in_channels = int(out_channels * alpha)
 
         return nn.Sequential(*layers)
@@ -93,9 +91,7 @@ class MobileNet(BaseModel):
 
 
 if __name__ == '__main__':
-    x = MobileNet(n_classes=1000)
+    x = MobileNet(n_classes=1000, alpha=1.0)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     x = x.to(device)
     summary(x, (3, 224, 224))
-
-
