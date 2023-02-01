@@ -103,6 +103,7 @@ class MobileNetV2(BaseModel):
         x = self.avgpool(x)
         x = torch.flatten(x, 1)
         x = self.classifier(x)
+        return x
 
 
 if __name__ == '__main__':

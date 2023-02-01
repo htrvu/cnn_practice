@@ -129,6 +129,7 @@ class _DenseNet(BaseModel):
         x = self.avgpool(x)
         x = torch.flatten(x, 1)
         x = self.classifier(x)
+        return x
 
 def DenseNet121(n_classes=1000, dropout=None):
     return _DenseNet('densenet121', n_classes=n_classes, dropout=dropout)
