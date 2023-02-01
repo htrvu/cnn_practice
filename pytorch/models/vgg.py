@@ -3,15 +3,19 @@ from torch import nn
 from torchsummary import summary
 from base import BaseModel
 
-def _vgg_block(in_channels, n_filters):
-    layers = []
-    for out_channels in n_filters:
-        conv2d = nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1)
-        layers += [conv2d, nn.ReLU(inplace=True)]
-        in_channels = out_channels
-    layers += [nn.MaxPool2d(kernel_size=2, stride=2)]
-    return layers
-
+class _VGGBlock(nn.Module):
+    def __init__(self, in_channels, n_filters):
+        super(_VGGBlock, self).__init__()
+        layers = []
+        for out_channels in n_filters:
+            conv2d = nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1)
+            layers += [conv2d, nn.ReLU(inplace=True)]
+            in_channels = out_channels
+        layers += [nn.MaxPool2d(kernel_size=2, stride=2)]
+        self.vggblock = nn.Sequential(*layers)
+    
+    def forward(self, x):
+        return self.vggblock(x)
 
 CONFIGS = {
     'vgg11': [[64], [128], [256, 256], [512, 512], [512, 512]],
@@ -19,7 +23,6 @@ CONFIGS = {
     'vgg16': [[64, 64], [128, 128], [256, 256, 256], [512, 512, 512], [512, 512, 512]],
     'vgg19': [[64, 64], [128, 128], [256, 256, 256, 256], [512, 512, 512, 512], [512, 512, 512, 512]],
 }
-
 
 class _VGG(BaseModel):
     def __init__(self, model_name='vgg16', n_classes=1000, dropout=0.5):
@@ -36,7 +39,7 @@ class _VGG(BaseModel):
         layers = []
         in_channels = 3
         for n_filters in cfg:
-            layers += _vgg_block(in_channels=in_channels, n_filters=n_filters)
+            layers.append(_VGGBlock(in_channels=in_channels, n_filters=n_filters))
             in_channels = n_filters[-1]
         return nn.Sequential(*layers)
 
