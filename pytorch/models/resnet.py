@@ -168,6 +168,7 @@ class _ResNet(BaseModel):
         x = self.avgpool(x)
         x = torch.flatten(x, 1)
         x = self.classifier(x)
+        return x
 
 
 def ResNet18(n_classes=1000, dropout=None):
