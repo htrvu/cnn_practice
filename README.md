@@ -10,4 +10,4 @@ Implementation of some popular CNN models using Tensorflow and Pytorch framework
 
 Training demo: (check the version to find the script of models)
 - [Tensorflow](https://www.kaggle.com/trngvhong/popular-cnn-architectures-tf-demos)
-- [Pytorch](https://www.kaggle.com) 
+- [Pytorch](https://www.kaggle.com/trngvhong/popular-cnn-architectures-pytorch-demos) 
